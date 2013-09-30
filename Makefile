@@ -1,6 +1,6 @@
 CC=c99
 CFLAGS=-I.
-DEPS=hellomake.h
+DEPS=ls
 
 %.o: %.c $(DEPS)
 	$(CC) -c -o $@ $< $(CFLAGS)
