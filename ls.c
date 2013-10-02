@@ -3,6 +3,8 @@
 #include <stdio.h>
 #include <dirent.h>
 #include <sys/stat.h>
+#include <pwd.h>
+#include <grp.h>
 
 void print_usage(char **argv)
 {
@@ -53,15 +55,16 @@ int main(int argc, char **argv)
         struct stat buf;
 #endif /* REUSE_STATBUF */
         char *ppath;
+        char full_path[1024];
         int *uid;
 
-        // XXX: Will not work for dir_name != cwd
         ppath = &entry->d_name;
+        sprintf(full_path, "%s/%s", dir_name, ppath);
 
 #ifdef REUSE_STATBUF
-        stat(ppath, pbuf);
+        stat(&full_path, pbuf);
 #else
-        stat(ppath, &buf);
+        stat(&full_path, &buf);
 #endif /* REUSE_STATBUF */
 
         char *accesses[] = {
@@ -81,8 +84,21 @@ int main(int argc, char **argv)
                     );
         }
 
-        printf("-%s 1 uid gid %d Month 00 00:00 %s\n",
+        struct passwd *user_info;
+        struct group *group_info;
+
+#ifdef REUSE_STATBUF
+        user_info = getpwuid(pbuf->st_uid);
+        group_info = getgrgid(pbuf->st_gid);
+#else
+        user_info = getpwuid(buf.st_uid);
+        group_info = getgrgid(buf.st_gid);
+#endif /* REUSE_STATBUF */
+
+        printf("-%s 1 %s %s %d Month 00 00:00 %s\n",
                 mode,
+                user_info->pw_name,
+                group_info->gr_name,
 #ifdef REUSE_STATBUF
                 pbuf->st_size,
 #else
