@@ -6,6 +6,7 @@
 
 GLuint program;
 GLint attribute_coord2d;
+GLuint vbo_triangle;
 
 int init_resources(void)
 {
@@ -21,6 +22,17 @@ int init_resources(void)
     {
         return 0;
     }
+
+    GLfloat triangle_vertices[] = {
+         0.0,  0.8,
+        -0.8, -0.8,
+         0.8, -0.8,
+    };
+
+    glGenBuffers(1, &vbo_triangle);
+    glBindBuffer(GL_ARRAY_BUFFER, vbo_triangle);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(triangle_vertices), triangle_vertices,
+            GL_STATIC_DRAW);
 
     // Program
     program = glCreateProgram();
@@ -50,17 +62,17 @@ int init_resources(void)
 
 void onDisplay()
 {
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
     glClearColor(0.0, 0.0, 0.0, 1.0);
 
     glClear(GL_COLOR_BUFFER_BIT);
 
     glUseProgram(program);
+
+    glBindBuffer(GL_ARRAY_BUFFER, vbo_triangle);
     glEnableVertexAttribArray(attribute_coord2d);
-    GLfloat triangle_vertices[] = {
-         0.0,  0.8,
-        -0.8, -0.8,
-         0.8, -0.8
-    };
 
     glVertexAttribPointer(
         attribute_coord2d,
@@ -68,7 +80,7 @@ void onDisplay()
         GL_FLOAT,
         GL_FALSE,
         0,
-        triangle_vertices
+        0
     );
 
     glDrawArrays(GL_TRIANGLES, 0, 3);
@@ -85,7 +97,7 @@ void free_resources()
 int main(int argc, char *argv[])
 {
     glutInit(&argc, argv);
-    glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE | GLUT_DEPTH);
+    glutInitDisplayMode(GLUT_RGBA | GLUT_ALPHA | GLUT_DOUBLE | GLUT_DEPTH);
     glutInitWindowSize(640, 480);
     glutCreateWindow("GFX");
 
