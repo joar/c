@@ -3,10 +3,18 @@
 #include <GL/glew.h>
 #include <GL/glut.h>
 #include <shader_utils.h>
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
+
+#ifndef M_PI
+#define M_PI 3.14159265358979323846
+#endif
 
 GLuint program;
 GLint attribute_coord2d, attribute_v_color;
 GLuint vbo_triangle;
+GLint uniform_fade;
 
 struct attributes {
     GLfloat coord2d[2];
@@ -80,6 +88,15 @@ int init_resources(void)
         return 0;
     }
 
+    // Uniform
+    const char *uniform_name;
+    uniform_name = "fade";
+    uniform_fade = glGetUniformLocation(program, uniform_name);
+    if (uniform_fade == -1)
+    {
+        fprintf(stderr, "Could not bind uniform %s\n", uniform_name);
+    }
+
     return 1;
 }
 
@@ -88,7 +105,7 @@ void onDisplay()
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-    glClearColor(0.0, 0.0, 0.0, 1.0);
+    glClearColor(1.0, 1.0, 1.0, 1.0);
 
     glClear(GL_COLOR_BUFFER_BIT);
 
@@ -124,6 +141,15 @@ void onDisplay()
     glutSwapBuffers();
 }
 
+void idle()
+{
+    float cur_fade = sinf(glutGet(GLUT_ELAPSED_TIME) / 100.0 * (2 * M_PI) / 5)
+        / 2 + 0.5;
+    glUseProgram(program);
+    glUniform1f(uniform_fade, cur_fade);
+    glutPostRedisplay();
+}
+
 void free_resources()
 {
     glDeleteProgram(program);
@@ -147,6 +173,7 @@ int main(int argc, char *argv[])
     if (1 == init_resources())
     {
         glutDisplayFunc(onDisplay);
+        glutIdleFunc(idle);
         glutMainLoop();
     }
 

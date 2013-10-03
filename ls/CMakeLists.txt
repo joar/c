@@ -10,5 +10,5 @@ set(LS_SRCS
 )
 
 include_directories("${PROJECT_BINARY_DIR}")
-add_executable (ls ${LS_SRCS})
+add_executable (runls ${LS_SRCS})
 include_directories("${PROJECT_INCLUDE_DIR}")
