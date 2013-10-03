@@ -32,6 +32,7 @@ int init_resources(void)
     if (!link_ok)
     {
         fprintf(stderr, "glLinkProgram:");
+        print_log(program);
         return 0;
     }
 
