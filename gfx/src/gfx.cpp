@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <GL/glew.h>
 #include <GL/glut.h>
-#include <shader_utils.h>
+#include <shader_utils.hpp>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
@@ -12,18 +12,18 @@
 #endif
 
 GLuint program;
-GLint attribute_coord2d, attribute_v_color;
+GLint attribute_coord3d, attribute_v_color;
 GLuint vbo_triangle;
 GLint uniform_fade;
 
 struct attributes {
-    GLfloat coord2d[2];
+    GLfloat coord3d[3];
     GLfloat v_color[3];
 };
 
 int init_resources(void)
 {
-    GLint compile_ok = GL_FALSE, link_ok = GL_FALSE;
+    GLint link_ok = GL_FALSE;
 
     GLuint vs, fs;
 
@@ -55,9 +55,9 @@ int init_resources(void)
     //
 
     struct attributes triangle_attributes[] = {
-        {{ 0.0,  0.8},     {1.0, 1.0, 0.0}},
-        {{-0.8, -0.8},     {0.0, 0.0, 1.0}},
-        {{ 0.8, -0.8},     {1.0, 0.0, 0.0}},
+        {{ 0.0,  0.8, 0.0}, {1.0, 1.0, 0.0}},
+        {{-0.8, -0.8, 0.0}, {0.0, 0.0, 1.0}},
+        {{ 0.8, -0.8, 0.0}, {1.0, 0.0, 0.0}},
     };
 
     glGenBuffers(1, &vbo_triangle);
@@ -70,10 +70,10 @@ int init_resources(void)
             GL_STATIC_DRAW
     );
 
-    const char *attribute_name = "coord2d";
-    attribute_coord2d = glGetAttribLocation(program, attribute_name);
+    const char *attribute_name = "coord3d";
+    attribute_coord3d = glGetAttribLocation(program, attribute_name);
 
-    if (attribute_coord2d == -1)
+    if (attribute_coord3d == -1)
     {
         fprintf(stderr, "Could not bind attribute %s\n", attribute_name);
         return 0;
@@ -111,14 +111,14 @@ void onDisplay()
 
     glUseProgram(program);
 
-    glEnableVertexAttribArray(attribute_coord2d);
+    glEnableVertexAttribArray(attribute_coord3d);
     glEnableVertexAttribArray(attribute_v_color);
 
     glBindBuffer(GL_ARRAY_BUFFER, vbo_triangle);
 
     glVertexAttribPointer(
-        attribute_coord2d,
-        2,
+        attribute_coord3d,
+        3,
         GL_FLOAT,
         GL_FALSE,
         sizeof(struct attributes),
@@ -130,12 +130,12 @@ void onDisplay()
         3,                  // number of elements per vertex
         GL_FLOAT,           // the type of each element
         GL_FALSE,           // take our values as-is
-        sizeof(struct attributes),// stride
-        (GLvoid *) offsetof(struct attributes, v_color)// offset
+        sizeof(struct attributes), // stride
+        (GLvoid *) offsetof(struct attributes, v_color) // offset
     );
 
     glDrawArrays(GL_TRIANGLES, 0, 3);
-    glDisableVertexAttribArray(attribute_coord2d);
+    glDisableVertexAttribArray(attribute_coord3d);
     glDisableVertexAttribArray(attribute_v_color);
 
     glutSwapBuffers();
