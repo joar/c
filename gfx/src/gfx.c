@@ -2,118 +2,23 @@
 #include <stdlib.h>
 #include <GL/glew.h>
 #include <GL/glut.h>
+#include <shader_utils.h>
 
 GLuint program;
 GLint attribute_coord2d;
-
-char* file_read(const char *filename)
-{
-    FILE* input = fopen(filename, "rb");
-
-    if (input == NULL)
-    {
-        return NULL;
-    }
-    if (fseek(input, 0, SEEK_END) == -1)
-    {
-        return NULL;
-    }
-
-    long size = ftell(input);
-    if (size == -1)
-    {
-        return NULL;
-    }
-
-    char *content = (char*) malloc((size_t) size +1);
-    if (content == NULL)
-    {
-        return NULL;
-    }
-    fread(content, 1, (size_t)size, input);
-    if (ferror(input))
-    {
-        free(content);
-        return NULL;
-    }
-    fclose(input);
-    content[size] = '\0';
-    return content;
-}
-
-void print_log(GLuint object)
-{
-    GLint log_length = 0;
-
-    if (glIsShader(object))
-    {
-        glGetShaderiv(object, GL_INFO_LOG_LENGTH, &log_length);
-    }
-    else if (glIsProgram(object))
-    {
-        glGetProgramiv(object, GL_INFO_LOG_LENGTH, &log_length);
-    }
-    else
-    {
-        fprintf(stderr, "print_log: Not a shader or a program\n");
-        return;
-    }
-
-    char *log = (char*)malloc(log_length);
-
-    if (glIsShader(object))
-    {
-        glGetShaderInfoLog(object, log_length, NULL, log);
-    }
-    else if (glIsProgram(object))
-    {
-        glGetProgramInfoLog(object, log_length, NULL, log);
-    }
-    fprintf(stderr, "%s", log);
-    free(log);
-}
 
 int init_resources(void)
 {
     GLint compile_ok = GL_FALSE, link_ok = GL_FALSE;
 
-    // Vertex shader
-    GLuint vs = glCreateShader(GL_VERTEX_SHADER);
-    const char *vs_source =
-#ifdef GL_ES_VERSION_2_0
-        "#version 100\n"  // OpenGL ES 2.0
-#else
-        "#version 120\n"  // OpenGL 2.1
-#endif
-        "attribute vec2 coord2d;"
-        "void main(void) {"
-        "   gl_Position = vec4(coord2d, 0.0, 1.0);"
-        "}";
-    glShaderSource(vs, 1, &vs_source, NULL);
-    glCompileShader(vs);
-    glGetShaderiv(vs, GL_COMPILE_STATUS, &compile_ok);
-    if (0 == compile_ok)
+    GLuint vs, fs;
+
+    if ((vs = create_shader("triangle.v.glsl", GL_VERTEX_SHADER)) == 0)
     {
-        fprintf(stderr, "Error in vertex shader\n");
         return 0;
     }
-
-    // Fragment shader
-    GLuint fs = glCreateShader(GL_FRAGMENT_SHADER);
-    const char *fs_source =
-        "#version 120\n"
-        "void main(void) {"
-        "   gl_FragColor[0] = 0.0;"
-        "   gl_FragColor[1] = 0.0;"
-        "   gl_FragColor[2] = 1.0;"
-        "}";
-
-    glShaderSource(fs, 1, &fs_source, NULL);
-    glCompileShader(fs);
-    glGetShaderiv(fs, GL_COMPILE_STATUS, &compile_ok);
-    if (!compile_ok)
+    if ((fs = create_shader("triangle.f.glsl", GL_FRAGMENT_SHADER)) == 0)
     {
-        fprintf(stderr, "Error in fragment shader\n");
         return 0;
     }
 
