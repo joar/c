@@ -6,7 +6,12 @@
 
 GLuint program;
 GLint attribute_coord2d, attribute_v_color;
-GLuint vbo_triangle, vbo_triangle_colors;
+GLuint vbo_triangle;
+
+struct attributes {
+    GLfloat coord2d[2];
+    GLfloat v_color[3];
+};
 
 int init_resources(void)
 {
@@ -41,27 +46,21 @@ int init_resources(void)
     // Buffers and attributes
     //
 
-    GLfloat triangle_colors[] = {
-        1.0, 1.0, 0.0,
-        0.0, 0.0, 1.0,
-        1.0, 0.0, 0.0,
-    };
-
-    glGenBuffers(1, &vbo_triangle_colors);
-    glBindBuffer(GL_ARRAY_BUFFER, vbo_triangle_colors);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(triangle_colors), triangle_colors,
-            GL_STATIC_DRAW);
-
-    GLfloat triangle_vertices[] = {
-         0.0,  0.8,
-        -0.8, -0.8,
-         0.8, -0.8,
+    struct attributes triangle_attributes[] = {
+        {{ 0.0,  0.8},     {1.0, 1.0, 0.0}},
+        {{-0.8, -0.8},     {0.0, 0.0, 1.0}},
+        {{ 0.8, -0.8},     {1.0, 0.0, 0.0}},
     };
 
     glGenBuffers(1, &vbo_triangle);
     glBindBuffer(GL_ARRAY_BUFFER, vbo_triangle);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(triangle_vertices), triangle_vertices,
-            GL_STATIC_DRAW);
+
+    glBufferData(
+            GL_ARRAY_BUFFER,
+            sizeof(triangle_attributes),
+            triangle_attributes,
+            GL_STATIC_DRAW
+    );
 
     const char *attribute_name = "coord2d";
     attribute_coord2d = glGetAttribLocation(program, attribute_name);
@@ -105,19 +104,17 @@ void onDisplay()
         2,
         GL_FLOAT,
         GL_FALSE,
-        0,
+        sizeof(struct attributes),
         0
     );
 
-
-    glBindBuffer(GL_ARRAY_BUFFER, vbo_triangle_colors);
     glVertexAttribPointer(
         attribute_v_color,  // attribute
         3,                  // number of elements per vertex
         GL_FLOAT,           // the type of each element
         GL_FALSE,           // take our values as-is
-        0,                  // no extra data between each position
-        0                   // offset of first element
+        sizeof(struct attributes),// stride
+        (GLvoid *) offsetof(struct attributes, v_color)// offset
     );
 
     glDrawArrays(GL_TRIANGLES, 0, 3);
