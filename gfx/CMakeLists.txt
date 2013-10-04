@@ -9,6 +9,8 @@ message(STATUS ${PROJECT_BINARY_DIR})
 
 set(GFX_SRCS
     ${PROJECT_SOURCE_DIR}/gfx.cpp
+    ${PROJECT_SOURCE_DIR}/shader_utils.cpp
+    ${PROJECT_SOURCE_DIR}/res_texture.c
 )
 
 set(GFX_LIBS
@@ -26,7 +28,8 @@ include_directories("${PROJECT_BINARY_DIR}")
 include_directories("${PROJECT_SOURCE_DIR}")
 
 add_executable(rungfx ${GFX_SRCS})
-add_library(shader_utils ${GFX_LIBS})
+#add_library(shader_utils ${GFX_LIBS})
+#add_library(res_texture ${PROJECT_SOURCE_DIR}/res_texture.c)
 
 find_package(OpenGL REQUIRED)
 find_package(GLUT REQUIRED)
@@ -37,6 +40,6 @@ target_link_libraries(rungfx
     ${GLUT_LIBRARY}
     ${GLEW_LIBRARY}
     m
-    shader_utils)
+)
 
 include_directories("${PROJECT_INCLUDE_DIR}")
